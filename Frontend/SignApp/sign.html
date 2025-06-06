@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signature App</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="shortcut icon" href="favicon-32x32.png" type="image/x-icon">
+
+
+    <style>
+        .main{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+        }
+
+        .btn-container,.top{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            margin: 20px 0px 20px 0px;
+        }
+
+        .color, button, select, input{
+            width: 80%;
+        }
+
+        .canvas{
+            border: 2px solid black;
+            
+        }
+
+        .btn-container> button{
+            margin: 15px;
+        }
+
+        .color{
+            text-align:center
+        }
+    </style>
+
+</head>
+<body>
+    <div class="main">
+
+        <div class="top">
+            <div class="color">
+                <p>Text color picker</p>
+                <input type="color" id="colorPicker">
+            </div>
+
+            <div class="color">
+                <p>Background</p>
+                <input type="color" id="canvaColorPicker">
+            </div>
+
+            <div class="color">
+                <p>Font Size</p>
+                <select id="fontPicker">
+                    <option value="5">5px</option>
+                    <option value="10">10px</option>
+                    <option value="20">20px</option>
+                    <option value="30">30px</option>
+                    <option value="40">40px</option>
+                    <option value="50">50px</option>
+                </select>
+            </div>
+        </div>
+
+        <canvas class="canvas" height="500" width="800" id="canvaBg"></canvas>
+
+        <div class="btn-container">
+            <button type="button" class="btn btn-success" id="successBtn">Save & Download</button>
+            <button type="button" class="btn btn-danger" id="dangerBtn">Clear</button>
+            <button type="button" class="btn btn-warning" id="warningBtn">Retrive Saved Signature</button>
+        </div>
+
+    </div>
+
+
+
+
+    <script>
+        let colorPicker = document.getElementById("colorPicker");
+        let canvaColorPicker = document.getElementById("canvaColorPicker");
+        let fontPicker = document.getElementById("fontPicker");
+        let canva = document.getElementById("canvaBg");
+        let saveBtn = document.getElementById("successBtn");
+        let clearBtn = document.getElementById("dangerBtn");
+        let RetriveBtn= document.getElementById("warningBtn");
+        let isDrawing = false;
+        const ctx = canva.getContext('2d');
+        
+        colorPicker.addEventListener('change', (e)=>{
+            ctx.strokeStyle = e.target.value;
+            ctx.fillStyle = e.target.value;
+        })
+        
+        canva.addEventListener('mousedown',(e)=>{
+            isDrawing = true;
+            lastX = event.offsetX;
+            lastY = event.offsetY;
+        })
+
+        canva.addEventListener('mousemove',(e)=>{
+            if(isDrawing){
+                ctx.beginPath();
+                ctx.moveTo(lastX,lastY);
+                ctx.lineTo(event.offsetX,event.offsetY)
+                ctx.stroke();
+
+                lastX = event.offsetX;
+                lastY = event.offsetY;
+            }
+        })
+
+        canva.addEventListener('mouseup',()=>{
+            isDrawing = false;
+        })
+        
+        canvaColorPicker.addEventListener('change', (e)=>{
+            ctx.fillStyle = e.target.value;
+            ctx.fillRect(0,0,800,500);
+        })
+
+        fontPicker.addEventListener('change', (e)=>{
+            ctx.lineWidth = e.target.value;
+        })
+
+        clearBtn.addEventListener('click', ()=>{
+            ctx.clearRect(0,0,canva.width,canva.height)
+        })
+
+        saveBtn.addEventListener('click', ()=>{
+            localStorage.setItem('canvasContents', canva.toDataURL());
+
+            let link = document.createElement("a");
+            link.download = 'data.png';
+            link.href = canva.toDataURL();
+            link.click();
+        })
+
+        RetriveBtn.addEventListener('click',()=>{
+            let savedData = localStorage.getItem('canvasContents');
+            if(savedData){
+                let img = new Image();
+                img.src = savedData;
+                ctx.drawImage(img,0,0);
+            }
+        })
+    </script>
+</body>
+</html>
